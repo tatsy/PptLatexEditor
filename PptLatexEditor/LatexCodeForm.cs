@@ -14,13 +14,12 @@ namespace PowerPointLatex
 {
     public partial class LatexCodeForm : Form
     {
-        private PowerPoint.Slide slide;
-        String codeFileName = @"C:\Users\Tatsuya\Desktop\pptlatex";
+        String outDir = @"C:\Users\Tatsuya\Desktop\pptlatex";
+        String codeFileName = @"C:\Users\Tatsuya\Desktop\pptlatex\latexcode";
 
         public LatexCodeForm()
         {
             InitializeComponent();
-            this.slide = slide;
         }
 
         private void previewButton_Click(object sender, EventArgs e)
@@ -29,9 +28,7 @@ namespace PowerPointLatex
             int    fontSize = (int)numFontSize.Value;
 
             // コードをファイルに書き込む
-            String outDir       = @"C:\Users\Tatsuya\Desktop";
-            String codeFileName = @"C:\Users\Tatsuya\Desktop\pptlatex";
-            StreamWriter writer = new StreamWriter(codeFileName + ".tex");
+            StreamWriter writer = new StreamWriter(String.Format("{0}-{1}.tex", codeFileName, 0));
             writer.WriteLine("\\documentclass{article}");
             writer.WriteLine("\\usepackage{amsmath,amssymb}");
             writer.WriteLine("\\pagestyle{empty}");
@@ -64,23 +61,18 @@ namespace PowerPointLatex
             PowerPoint.Application app = Globals.PptLatexAddin.Application;
             try
             {
-                int nslides = app.ActivePresentation.Slides.Count;
                 app.ActiveWindow.Selection.SlideRange.Shapes.AddPicture(codeFileName + ".png", Office.MsoTriState.msoFalse, Office.MsoTriState.msoTrue, 100, 100);
+                MessageBox.Show(app.ActiveWindow.Selection.SlideRange.Shapes.Count.ToString());
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
             }
-            this.Hide();
+            this.Close();
         }
 
-        private void LatexCodeForm_FormClosed(object sender, FormClosedEventArgs e)
+        private void LatexCodeForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (e.CloseReason == CloseReason.UserClosing)
-            {
-                this.Hide();
-                return;
-            }
             this.Close();
         }
     }

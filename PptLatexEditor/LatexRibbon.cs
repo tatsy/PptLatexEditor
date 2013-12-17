@@ -12,15 +12,14 @@ namespace PowerPointLatex
 {
     public partial class LatexRibbon
     {
-        private LatexCodeForm lcform;
-
         private void LatexRibbon_Load(object sender, RibbonUIEventArgs e)
         {            
-            lcform = new LatexCodeForm();
+            
         }
 
         private void button1_Click(object sender, RibbonControlEventArgs e)
         {
+            LatexCodeForm lcform = new LatexCodeForm();
             lcform.Show();
         }
     }

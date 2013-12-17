@@ -115,7 +115,7 @@
             this.Controls.Add(this.equationBox);
             this.Name = "LatexCodeForm";
             this.Text = "LatexCodeForm";
-            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.LatexCodeForm_FormClosed);
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.LatexCodeForm_FormClosing);
             ((System.ComponentModel.ISupportInitialize)(this.equationBox)).EndInit();
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
