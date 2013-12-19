@@ -34,18 +34,17 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.tab1 = this.Factory.CreateRibbonTab();
+            this.tabTexEdit = this.Factory.CreateRibbonTab();
             this.group1 = this.Factory.CreateRibbonGroup();
             this.button1 = this.Factory.CreateRibbonButton();
-            this.tab1.SuspendLayout();
+            this.tabTexEdit.SuspendLayout();
             this.group1.SuspendLayout();
             // 
-            // tab1
+            // tabTexEdit
             // 
-            this.tab1.ControlId.ControlIdType = Microsoft.Office.Tools.Ribbon.RibbonControlIdType.Office;
-            this.tab1.Groups.Add(this.group1);
-            this.tab1.Label = "TeX";
-            this.tab1.Name = "tab1";
+            this.tabTexEdit.Groups.Add(this.group1);
+            this.tabTexEdit.Label = "TeX";
+            this.tabTexEdit.Name = "tabTexEdit";
             // 
             // group1
             // 
@@ -65,10 +64,10 @@
             // 
             this.Name = "LatexRibbon";
             this.RibbonType = "Microsoft.PowerPoint.Presentation";
-            this.Tabs.Add(this.tab1);
+            this.Tabs.Add(this.tabTexEdit);
             this.Load += new Microsoft.Office.Tools.Ribbon.RibbonUIEventHandler(this.LatexRibbon_Load);
-            this.tab1.ResumeLayout(false);
-            this.tab1.PerformLayout();
+            this.tabTexEdit.ResumeLayout(false);
+            this.tabTexEdit.PerformLayout();
             this.group1.ResumeLayout(false);
             this.group1.PerformLayout();
 
@@ -76,7 +75,7 @@
 
         #endregion
 
-        internal Microsoft.Office.Tools.Ribbon.RibbonTab tab1;
+        internal Microsoft.Office.Tools.Ribbon.RibbonTab tabTexEdit;
         internal Microsoft.Office.Tools.Ribbon.RibbonGroup group1;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton button1;
     }
