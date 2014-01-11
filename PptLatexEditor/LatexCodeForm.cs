@@ -6,6 +6,7 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using PowerPoint = Microsoft.Office.Interop.PowerPoint;
 using Office = Microsoft.Office.Core;
@@ -17,13 +18,30 @@ namespace PowerPointLatex
         String outDir = @"C:\Users\Tatsuya\Desktop\pptlatex";
         String codeFileName = @"C:\Users\Tatsuya\Desktop\pptlatex\latexcode";
         PowerPoint.Shapes shapes;
+        PowerPoint.Shape targetShape;
         string texCode;
         Bitmap eqImage;
 
-        public LatexCodeForm()
+        public LatexCodeForm(PowerPoint.Shape shape = null)
         {
             InitializeComponent();
             shapes = Globals.PptLatexAddin.Application.ActiveWindow.Selection.SlideRange.Shapes;
+
+            if (shape == null)
+            {
+                this.codeTextbox.Text = "";
+            } 
+            else
+            {
+                targetShape = shape;
+                String texCode = shape.AlternativeText;
+                String pattern = @"\\\[[\r\n]{1,2}(.*)[\r\n]{1,2}\\\]";
+                MatchCollection match = Regex.Matches(texCode, pattern, RegexOptions.Singleline);
+                if (match.Count >= 1)
+                {
+                    this.codeTextbox.Text = match[0].Groups[1].Value;
+                }
+            }
         }
 
         private void previewButton_Click(object sender, EventArgs e)
@@ -34,7 +52,10 @@ namespace PowerPointLatex
 
             // コードをファイルに書き込む
             renderTexCode(code, fontSize);
-            equationBox.Image = new Bitmap(eqImage);
+            equationBox.Image = eqImage;
+            equationBox.Location = new Point((equationBox.Parent.ClientSize.Width / 2) - (eqImage.Width / 2),
+                              (equationBox.Parent.ClientSize.Height / 2) - (eqImage.Height / 2));
+            equationBox.Refresh();
             this.Refresh();
         }
 
@@ -61,30 +82,46 @@ namespace PowerPointLatex
 
             System.Diagnostics.Process proc = new System.Diagnostics.Process();
             proc.StartInfo.FileName = System.Environment.GetEnvironmentVariable("ComSpec");
-            //proc.StartInfo.CreateNoWindow = true;
-            //proc.StartInfo.UseShellExecute = false;
+            proc.StartInfo.CreateNoWindow = true;
+            proc.StartInfo.UseShellExecute = false;
 
             proc.StartInfo.Arguments = @"/c C:\w32tex\bin\platex.exe -output-directory=" + outDir + " " + codeFileName + ".tex && "
                                      + @"C:\w32tex\bin\dvipng.exe -T tight -Q 5 -bd 1000 -o " + codeFileName + ".png " + codeFileName + ".dvi && /w";
             proc.Start();
-            proc.WaitForExit();
+            proc.WaitForExit(3000);
             proc.Close();
 
-            Image img = Image.FromFile(codeFileName + ".png");
-            eqImage = new Bitmap(img);
+            Image img = null;
+            if(File.Exists(codeFileName + ".png"))
+            {
+                img = Image.FromFile(codeFileName + ".png");
+                eqImage = new Bitmap(img);
+                img.Dispose();
+            }
+            else
+            {
+                eqImage = null;
+            }
         }
 
         private void okButton_Click(object sender, EventArgs e)
         {            
             PowerPoint.Application app = Globals.PptLatexAddin.Application;
-            try
+            if (eqImage != null)
             {
-                PowerPoint.Shape picBox = app.ActiveWindow.Selection.SlideRange.Shapes.AddPicture(codeFileName + ".png", Office.MsoTriState.msoFalse, Office.MsoTriState.msoTrue, 100, 100);
-                picBox.AlternativeText = texCode;
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
+                try
+                {
+                    PowerPoint.Shape picBox = app.ActiveWindow.Selection.SlideRange.Shapes.AddPicture(codeFileName + ".png", Office.MsoTriState.msoFalse, Office.MsoTriState.msoTrue, 100, 100);
+                    picBox.AlternativeText = texCode;
+                    if (targetShape != null)
+                    {
+                        targetShape.Delete();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                }
             }
             this.Close();
         }

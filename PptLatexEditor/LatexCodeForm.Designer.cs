@@ -34,32 +34,33 @@
             this.okButton = new System.Windows.Forms.Button();
             this.panel1 = new System.Windows.Forms.Panel();
             this.numFontSize = new System.Windows.Forms.NumericUpDown();
+            this.panel2 = new System.Windows.Forms.Panel();
             ((System.ComponentModel.ISupportInitialize)(this.equationBox)).BeginInit();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numFontSize)).BeginInit();
+            this.panel2.SuspendLayout();
             this.SuspendLayout();
             // 
             // codeTextbox
             // 
-            this.codeTextbox.Dock = System.Windows.Forms.DockStyle.Top;
-            this.codeTextbox.Location = new System.Drawing.Point(0, 0);
+            this.codeTextbox.Location = new System.Drawing.Point(12, 203);
             this.codeTextbox.Multiline = true;
             this.codeTextbox.Name = "codeTextbox";
-            this.codeTextbox.Size = new System.Drawing.Size(572, 142);
+            this.codeTextbox.Size = new System.Drawing.Size(548, 90);
             this.codeTextbox.TabIndex = 0;
             // 
             // equationBox
             // 
-            this.equationBox.Dock = System.Windows.Forms.DockStyle.Top;
-            this.equationBox.Location = new System.Drawing.Point(0, 0);
+            this.equationBox.Location = new System.Drawing.Point(17, 33);
             this.equationBox.Name = "equationBox";
-            this.equationBox.Size = new System.Drawing.Size(572, 149);
+            this.equationBox.Padding = new System.Windows.Forms.Padding(5);
+            this.equationBox.Size = new System.Drawing.Size(539, 107);
             this.equationBox.TabIndex = 1;
             this.equationBox.TabStop = false;
             // 
             // previewButton
             // 
-            this.previewButton.Location = new System.Drawing.Point(409, 149);
+            this.previewButton.Location = new System.Drawing.Point(400, 299);
             this.previewButton.Name = "previewButton";
             this.previewButton.Size = new System.Drawing.Size(75, 23);
             this.previewButton.TabIndex = 2;
@@ -69,7 +70,7 @@
             // 
             // okButton
             // 
-            this.okButton.Location = new System.Drawing.Point(490, 149);
+            this.okButton.Location = new System.Drawing.Point(481, 299);
             this.okButton.Name = "okButton";
             this.okButton.Size = new System.Drawing.Size(75, 23);
             this.okButton.TabIndex = 3;
@@ -79,26 +80,27 @@
             // 
             // panel1
             // 
+            this.panel1.Controls.Add(this.panel2);
             this.panel1.Controls.Add(this.numFontSize);
             this.panel1.Controls.Add(this.codeTextbox);
             this.panel1.Controls.Add(this.okButton);
             this.panel1.Controls.Add(this.previewButton);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panel1.Location = new System.Drawing.Point(0, 149);
+            this.panel1.Location = new System.Drawing.Point(0, 0);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(572, 183);
+            this.panel1.Size = new System.Drawing.Size(572, 332);
             this.panel1.TabIndex = 4;
             // 
             // numFontSize
             // 
-            this.numFontSize.Location = new System.Drawing.Point(13, 152);
+            this.numFontSize.Location = new System.Drawing.Point(22, 302);
             this.numFontSize.Minimum = new decimal(new int[] {
             1,
             0,
             0,
             0});
             this.numFontSize.Name = "numFontSize";
-            this.numFontSize.Size = new System.Drawing.Size(120, 19);
+            this.numFontSize.Size = new System.Drawing.Size(61, 19);
             this.numFontSize.TabIndex = 4;
             this.numFontSize.Value = new decimal(new int[] {
             22,
@@ -106,13 +108,21 @@
             0,
             0});
             // 
+            // panel2
+            // 
+            this.panel2.Controls.Add(this.equationBox);
+            this.panel2.Dock = System.Windows.Forms.DockStyle.Top;
+            this.panel2.Location = new System.Drawing.Point(0, 0);
+            this.panel2.Name = "panel2";
+            this.panel2.Size = new System.Drawing.Size(572, 197);
+            this.panel2.TabIndex = 5;
+            // 
             // LatexCodeForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(572, 332);
             this.Controls.Add(this.panel1);
-            this.Controls.Add(this.equationBox);
             this.Name = "LatexCodeForm";
             this.Text = "LatexCodeForm";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.LatexCodeForm_FormClosing);
@@ -120,6 +130,7 @@
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numFontSize)).EndInit();
+            this.panel2.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -132,5 +143,6 @@
         private System.Windows.Forms.Button okButton;
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.NumericUpDown numFontSize;
+        private System.Windows.Forms.Panel panel2;
     }
 }

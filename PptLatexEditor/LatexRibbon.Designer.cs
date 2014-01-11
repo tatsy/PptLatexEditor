@@ -37,6 +37,7 @@
             this.tabTexEdit = this.Factory.CreateRibbonTab();
             this.group1 = this.Factory.CreateRibbonGroup();
             this.button1 = this.Factory.CreateRibbonButton();
+            this.button2 = this.Factory.CreateRibbonButton();
             this.tabTexEdit.SuspendLayout();
             this.group1.SuspendLayout();
             // 
@@ -49,16 +50,26 @@
             // group1
             // 
             this.group1.Items.Add(this.button1);
+            this.group1.Items.Add(this.button2);
             this.group1.Name = "group1";
             // 
             // button1
             // 
             this.button1.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
-            this.button1.Image = global::PowerPointLatex.Properties.Resources.pptlatex;
             this.button1.Label = "Equation";
             this.button1.Name = "button1";
+            this.button1.OfficeImageId = "FunctionWizard";
             this.button1.ShowImage = true;
             this.button1.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.button1_Click);
+            // 
+            // button2
+            // 
+            this.button2.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
+            this.button2.Label = "Edit";
+            this.button2.Name = "button2";
+            this.button2.OfficeImageId = "SignatureLineInsert";
+            this.button2.ShowImage = true;
+            this.button2.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.button2_Click);
             // 
             // LatexRibbon
             // 
@@ -78,6 +89,7 @@
         internal Microsoft.Office.Tools.Ribbon.RibbonTab tabTexEdit;
         internal Microsoft.Office.Tools.Ribbon.RibbonGroup group1;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton button1;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton button2;
     }
 
     partial class ThisRibbonCollection

@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using PowerPoint = Microsoft.Office.Interop.PowerPoint;
 using Office = Microsoft.Office.Core;
 using Microsoft.Office.Tools.Ribbon;
@@ -21,6 +22,23 @@ namespace PowerPointLatex
         {
             LatexCodeForm lcform = new LatexCodeForm();
             lcform.Show();
+        }
+
+        private void button2_Click(object sender, RibbonControlEventArgs e)
+        {
+            PowerPoint.Application app = Globals.PptLatexAddin.Application;
+            PowerPoint.Selection sel = app.ActiveWindow.Selection;
+            if (sel.Type == PowerPoint.PpSelectionType.ppSelectionShapes)
+            {
+                foreach (PowerPoint.Shape shape in sel.ShapeRange)
+                {
+                    if (shape.AlternativeText.Contains("--PptLatexEditor--"))
+                    {
+                        LatexCodeForm lcform = new LatexCodeForm(shape);
+                        lcform.Show();
+                    }
+                }
+            }
         }
     }
 }
