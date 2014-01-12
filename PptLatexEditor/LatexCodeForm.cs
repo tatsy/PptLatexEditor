@@ -35,7 +35,7 @@ namespace PowerPointLatex
             {
                 targetShape = shape;
                 String texCode = shape.AlternativeText;
-                String pattern = @"\\\[[\r\n]{1,2}(.*)[\r\n]{1,2}\\\]";
+                String pattern = @"\\\[\r\n(.*)\r\n\\\]";
                 MatchCollection match = Regex.Matches(texCode, pattern, RegexOptions.Singleline);
                 if (match.Count >= 1)
                 {
