@@ -66,9 +66,10 @@ namespace PowerPointLatex
             stream.WriteLine("% --PptLatexEditor--");
             stream.WriteLine("\\documentclass{article}");
             stream.WriteLine("\\usepackage{amsmath,amssymb}");
+            stream.WriteLine("\\usepackage{anyfontsize}");
             stream.WriteLine("\\pagestyle{empty}");
             stream.WriteLine("\\begin{document}");
-            stream.WriteLine("\\fontsize{" + fontSize.ToString() + "}{3pt}\\selectfont");
+            stream.WriteLine("\\fontsize{" + fontSize.ToString() + "pt}{" + fontSize.ToString() + "pt}\\selectfont");
             stream.WriteLine("\\[");
             stream.WriteLine(code);
             stream.WriteLine("\\]");
@@ -111,7 +112,12 @@ namespace PowerPointLatex
             {
                 try
                 {
+                    String code = codeTextbox.Text;
+                    int fontSize = (int)numFontSize.Value;
+                    renderTexCode(code, (int)(fontSize * 1.5));
+
                     PowerPoint.Shape picBox = app.ActiveWindow.Selection.SlideRange.Shapes.AddPicture(codeFileName + ".png", Office.MsoTriState.msoFalse, Office.MsoTriState.msoTrue, 100, 100);
+                    picBox.ScaleWidth(0.5f, Office.MsoTriState.msoTrue);
                     picBox.AlternativeText = texCode;
                     if (targetShape != null)
                     {
