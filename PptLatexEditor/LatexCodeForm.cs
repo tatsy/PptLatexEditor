@@ -22,6 +22,8 @@ namespace PowerPointLatex
         string texCode;
         Bitmap eqImage;
 
+        private char[] trimableLetters = new char[] { '\n', '\r' };
+
         public LatexCodeForm(PowerPoint.Shape shape = null)
         {
             InitializeComponent();
@@ -35,11 +37,18 @@ namespace PowerPointLatex
             {
                 targetShape = shape;
                 String texCode = shape.AlternativeText;
-                String pattern = @"\\\[\r\n(.*)\r\n\\\]";
-                MatchCollection match = Regex.Matches(texCode, pattern, RegexOptions.Singleline);
-                if (match.Count >= 1)
+                String patCode = @"\\begin\{eqnarray\*\}[\r\n]{0,2}(.*)[\r\n]{0,2}\\end\{eqnarray\*\}";
+                String patSize = @"\\fontsize\{([0-9]+)pt\}";
+                MatchCollection matCode = Regex.Matches(texCode, patCode, RegexOptions.Singleline);
+                if (matCode.Count >= 1)
                 {
-                    this.codeTextbox.Text = match[0].Groups[1].Value;
+                    this.codeTextbox.Text = matCode[0].Groups[1].Value;
+                }
+
+                MatchCollection matSize = Regex.Matches(texCode, patSize, RegexOptions.Singleline);
+                if (matSize.Count >= 1)
+                {
+                    this.numFontSize.Value = Int32.Parse(matSize[0].Groups[1].Value);
                 }
             }
         }
@@ -51,7 +60,7 @@ namespace PowerPointLatex
             int fontSize = (int)numFontSize.Value;
 
             // コードをファイルに書き込む
-            renderTexCode(code, fontSize);
+            renderTexCode(code, fontSize, false);
             equationBox.Image = eqImage;
             equationBox.Location = new Point((equationBox.Parent.ClientSize.Width / 2) - (eqImage.Width / 2),
                               (equationBox.Parent.ClientSize.Height / 2) - (eqImage.Height / 2));
@@ -60,7 +69,7 @@ namespace PowerPointLatex
         }
 
         // TeXのコードを画像としてレンダリング
-        private void renderTexCode(string code, int fontSize)
+        private void renderTexCode(string code, int fontSize, bool isFinal)
         {
             StringWriter stream = new StringWriter();
             stream.WriteLine("% --PptLatexEditor--");
@@ -70,14 +79,20 @@ namespace PowerPointLatex
             stream.WriteLine("\\pagestyle{empty}");
             stream.WriteLine("\\begin{document}");
             stream.WriteLine("\\fontsize{" + fontSize.ToString() + "pt}{" + fontSize.ToString() + "pt}\\selectfont");
-            stream.WriteLine("\\[");
-            stream.WriteLine(code);
-            stream.WriteLine("\\]");
+            stream.WriteLine("\\begin{eqnarray*}");
+            stream.WriteLine(code.Trim(trimableLetters));
+            stream.WriteLine("\\end{eqnarray*}");
             stream.WriteLine("\\end{document}");
             stream.Close();
             texCode = stream.ToString();
 
-            StreamWriter writer = new StreamWriter(String.Format("{0}.tex", codeFileName));
+            String fileName = codeFileName;
+            if (isFinal)
+            {
+                fileName += "_final";
+            }
+
+            StreamWriter writer = new StreamWriter(String.Format("{0}.tex", fileName));
             writer.Write(texCode);
             writer.Close();
 
@@ -86,16 +101,16 @@ namespace PowerPointLatex
             proc.StartInfo.CreateNoWindow = true;
             proc.StartInfo.UseShellExecute = false;
 
-            proc.StartInfo.Arguments = @"/c C:\w32tex\bin\platex.exe -output-directory=" + outDir + " " + codeFileName + ".tex && "
-                                     + @"C:\w32tex\bin\dvipng.exe -T tight -Q 5 -bd 1000 -o " + codeFileName + ".png " + codeFileName + ".dvi && /w";
+            proc.StartInfo.Arguments = @"/c C:\w32tex\bin\platex.exe -output-directory=" + outDir + " " + fileName + ".tex && "
+                                     + @"C:\w32tex\bin\dvipng.exe -T tight --freetype0 -Q 5 -bd 1000 -o " + fileName + ".png " + fileName + ".dvi && /w";
             proc.Start();
             proc.WaitForExit(3000);
             proc.Close();
 
             Image img = null;
-            if(File.Exists(codeFileName + ".png"))
+            if(File.Exists(fileName + ".png"))
             {
-                img = Image.FromFile(codeFileName + ".png");
+                img = Image.FromFile(fileName + ".png");
                 eqImage = new Bitmap(img);
                 img.Dispose();
             }
@@ -113,10 +128,10 @@ namespace PowerPointLatex
                 try
                 {
                     String code = codeTextbox.Text;
-                    int fontSize = (int)numFontSize.Value;
-                    renderTexCode(code, (int)(fontSize * 1.5));
+                    int fontSize = (int)((double)numFontSize.Value * 1.5);
+                    renderTexCode(code, fontSize, true);
 
-                    PowerPoint.Shape picBox = app.ActiveWindow.Selection.SlideRange.Shapes.AddPicture(codeFileName + ".png", Office.MsoTriState.msoFalse, Office.MsoTriState.msoTrue, 100, 100);
+                    PowerPoint.Shape picBox = app.ActiveWindow.Selection.SlideRange.Shapes.AddPicture(codeFileName + "_final.png", Office.MsoTriState.msoFalse, Office.MsoTriState.msoTrue, 100, 100);
                     picBox.ScaleWidth(0.5f, Office.MsoTriState.msoTrue);
                     picBox.AlternativeText = texCode;
                     if (targetShape != null)
