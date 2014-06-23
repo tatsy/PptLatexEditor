@@ -33,16 +33,17 @@
             this.previewButton = new System.Windows.Forms.Button();
             this.okButton = new System.Windows.Forms.Button();
             this.panel1 = new System.Windows.Forms.Panel();
-            this.numFontSize = new System.Windows.Forms.NumericUpDown();
             this.panel2 = new System.Windows.Forms.Panel();
+            this.numFontSize = new System.Windows.Forms.NumericUpDown();
             ((System.ComponentModel.ISupportInitialize)(this.equationBox)).BeginInit();
             this.panel1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numFontSize)).BeginInit();
             this.panel2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numFontSize)).BeginInit();
             this.SuspendLayout();
             // 
             // codeTextbox
             // 
+            this.codeTextbox.Font = new System.Drawing.Font("VL ゴシック", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
             this.codeTextbox.Location = new System.Drawing.Point(12, 203);
             this.codeTextbox.Multiline = true;
             this.codeTextbox.Name = "codeTextbox";
@@ -51,10 +52,10 @@
             // 
             // equationBox
             // 
-            this.equationBox.Location = new System.Drawing.Point(17, 33);
+            this.equationBox.Location = new System.Drawing.Point(12, 12);
             this.equationBox.Name = "equationBox";
             this.equationBox.Padding = new System.Windows.Forms.Padding(5);
-            this.equationBox.Size = new System.Drawing.Size(539, 107);
+            this.equationBox.Size = new System.Drawing.Size(548, 182);
             this.equationBox.TabIndex = 1;
             this.equationBox.TabStop = false;
             // 
@@ -91,6 +92,15 @@
             this.panel1.Size = new System.Drawing.Size(572, 332);
             this.panel1.TabIndex = 4;
             // 
+            // panel2
+            // 
+            this.panel2.Controls.Add(this.equationBox);
+            this.panel2.Dock = System.Windows.Forms.DockStyle.Top;
+            this.panel2.Location = new System.Drawing.Point(0, 0);
+            this.panel2.Name = "panel2";
+            this.panel2.Size = new System.Drawing.Size(572, 197);
+            this.panel2.TabIndex = 5;
+            // 
             // numFontSize
             // 
             this.numFontSize.Location = new System.Drawing.Point(22, 302);
@@ -108,15 +118,6 @@
             0,
             0});
             // 
-            // panel2
-            // 
-            this.panel2.Controls.Add(this.equationBox);
-            this.panel2.Dock = System.Windows.Forms.DockStyle.Top;
-            this.panel2.Location = new System.Drawing.Point(0, 0);
-            this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(572, 197);
-            this.panel2.TabIndex = 5;
-            // 
             // LatexCodeForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -129,8 +130,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.equationBox)).EndInit();
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numFontSize)).EndInit();
             this.panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.numFontSize)).EndInit();
             this.ResumeLayout(false);
 
         }

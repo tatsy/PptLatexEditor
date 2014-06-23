@@ -15,19 +15,16 @@ namespace PowerPointLatex
 {
     public partial class LatexCodeForm : Form
     {
-        String outDir = @"C:\Users\Tatsuya\Desktop\pptlatex";
-        String codeFileName = @"C:\Users\Tatsuya\Desktop\pptlatex\latexcode";
-        PowerPoint.Shapes shapes;
-        PowerPoint.Shape targetShape;
-        string texCode;
-        Bitmap eqImage;
+        private PowerPoint.Shapes shapes;
+        private PowerPoint.Shape targetShape;
+        private TexEquation texEq;
 
-        private char[] trimableLetters = new char[] { '\n', '\r' };
-
+        // フォームのコンストラクタ
         public LatexCodeForm(PowerPoint.Shape shape = null)
         {
             InitializeComponent();
             shapes = Globals.PptLatexAddin.Application.ActiveWindow.Selection.SlideRange.Shapes;
+            texEq  = new TexEquation();
 
             if (shape == null)
             {
@@ -38,17 +35,25 @@ namespace PowerPointLatex
                 targetShape = shape;
                 String texCode = shape.AlternativeText;
                 String patCode = @"\\begin\{eqnarray\*\}[\r\n]{0,2}(.*)[\r\n]{0,2}\\end\{eqnarray\*\}";
-                String patSize = @"\\fontsize\{([0-9]+)pt\}";
+                String patSize = "% --Font Size: ([0-9]+)pt--";
                 MatchCollection matCode = Regex.Matches(texCode, patCode, RegexOptions.Singleline);
                 if (matCode.Count >= 1)
                 {
                     this.codeTextbox.Text = matCode[0].Groups[1].Value;
+                }
+                else
+                {
+                    this.codeTextbox.Text = "";
                 }
 
                 MatchCollection matSize = Regex.Matches(texCode, patSize, RegexOptions.Singleline);
                 if (matSize.Count >= 1)
                 {
                     this.numFontSize.Value = Int32.Parse(matSize[0].Groups[1].Value);
+                }
+                else
+                {
+                    this.numFontSize.Value = 30;
                 }
             }
         }
@@ -61,9 +66,21 @@ namespace PowerPointLatex
 
             // コードをファイルに書き込む
             renderTexCode(code, fontSize, false);
-            equationBox.Image = eqImage;
-            equationBox.Location = new Point((equationBox.Parent.ClientSize.Width / 2) - (eqImage.Width / 2),
-                              (equationBox.Parent.ClientSize.Height / 2) - (eqImage.Height / 2));
+            int width  = texEq.EqImage.Width;
+            int height = texEq.EqImage.Height;
+
+            // 画像が大きければ縮小する
+            if (width > equationBox.Width || height > equationBox.Height)
+            {
+                double scaleW = Math.Min(1.0, equationBox.Width  / (double)width);
+                double scaleH = Math.Min(1.0, equationBox.Height / (double)height);
+                double scale = Math.Min(scaleW, scaleH) * 0.9;
+                width  = (int)(width  * scale);
+                height = (int)(height * scale);
+            }
+            equationBox.Image = new Bitmap(texEq.EqImage, width, height);
+            equationBox.Location = new Point((equationBox.Parent.ClientSize.Width / 2) - (width / 2),
+                              (equationBox.Parent.ClientSize.Height / 2) - (height / 2));
             equationBox.Refresh();
             this.Refresh();
         }
@@ -71,69 +88,24 @@ namespace PowerPointLatex
         // TeXのコードを画像としてレンダリング
         private void renderTexCode(string code, int fontSize, bool isFinal)
         {
-            StringWriter stream = new StringWriter();
-            stream.WriteLine("% --PptLatexEditor--");
-            stream.WriteLine("\\documentclass{article}");
-            stream.WriteLine("\\usepackage{amsmath,amssymb}");
-            stream.WriteLine("\\usepackage{anyfontsize}");
-            stream.WriteLine("\\pagestyle{empty}");
-            stream.WriteLine("\\begin{document}");
-            stream.WriteLine("\\fontsize{" + fontSize.ToString() + "pt}{" + fontSize.ToString() + "pt}\\selectfont");
-            stream.WriteLine("\\begin{eqnarray*}");
-            stream.WriteLine(code.Trim(trimableLetters));
-            stream.WriteLine("\\end{eqnarray*}");
-            stream.WriteLine("\\end{document}");
-            stream.Close();
-            texCode = stream.ToString();
-
-            String fileName = codeFileName;
-            if (isFinal)
-            {
-                fileName += "_final";
-            }
-
-            StreamWriter writer = new StreamWriter(String.Format("{0}.tex", fileName));
-            writer.Write(texCode);
-            writer.Close();
-
-            System.Diagnostics.Process proc = new System.Diagnostics.Process();
-            proc.StartInfo.FileName = System.Environment.GetEnvironmentVariable("ComSpec");
-            proc.StartInfo.CreateNoWindow = true;
-            proc.StartInfo.UseShellExecute = false;
-
-            proc.StartInfo.Arguments = @"/c C:\w32tex\bin\platex.exe -output-directory=" + outDir + " " + fileName + ".tex && "
-                                     + @"C:\w32tex\bin\dvipng.exe -T tight --freetype0 -Q 5 -bd 1000 -o " + fileName + ".png " + fileName + ".dvi && /w";
-            proc.Start();
-            proc.WaitForExit(3000);
-            proc.Close();
-
-            Image img = null;
-            if(File.Exists(fileName + ".png"))
-            {
-                img = Image.FromFile(fileName + ".png");
-                eqImage = new Bitmap(img);
-                img.Dispose();
-            }
-            else
-            {
-                eqImage = null;
-            }
+            texEq.Render(code, fontSize, isFinal);
         }
 
+        // OKボタンがクリックされた
         private void okButton_Click(object sender, EventArgs e)
         {            
             PowerPoint.Application app = Globals.PptLatexAddin.Application;
-            if (eqImage != null)
+            if (texEq.EqImage != null)
             {
                 try
                 {
                     String code = codeTextbox.Text;
-                    int fontSize = (int)((double)numFontSize.Value * 1.5);
+                    int fontSize = (int)numFontSize.Value;
                     renderTexCode(code, fontSize, true);
 
-                    PowerPoint.Shape picBox = app.ActiveWindow.Selection.SlideRange.Shapes.AddPicture(codeFileName + "_final.png", Office.MsoTriState.msoFalse, Office.MsoTriState.msoTrue, 100, 100);
+                    PowerPoint.Shape picBox = texEq.GetImageShape();
                     picBox.ScaleWidth(0.5f, Office.MsoTriState.msoTrue);
-                    picBox.AlternativeText = texCode;
+                    picBox.AlternativeText = texEq.TexCode;
                     if (targetShape != null)
                     {
                         targetShape.Delete();
@@ -147,6 +119,7 @@ namespace PowerPointLatex
             this.Close();
         }
 
+        // 閉じるボタンがクリックされた
         private void LatexCodeForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             this.Close();
