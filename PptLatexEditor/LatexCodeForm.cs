@@ -105,9 +105,12 @@ namespace PowerPointLatex
 
                     PowerPoint.Shape picBox = texEq.GetImageShape();
                     picBox.ScaleWidth(0.5f, Office.MsoTriState.msoTrue);
+                                        
                     picBox.AlternativeText = texEq.TexCode;
                     if (targetShape != null)
                     {
+                        picBox.Top = targetShape.Top;
+                        picBox.Left = targetShape.Left;
                         targetShape.Delete();
                     }
                 }
