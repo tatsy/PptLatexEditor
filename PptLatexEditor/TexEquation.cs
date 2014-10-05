@@ -13,8 +13,9 @@ namespace PowerPointLatex
     {
         private static char[] trimableLetters = new char[] { '\n', '\r' };
 
-        private static String outDir = @"C:\Users\Tatsuya\Desktop\pptlatex";
-        private static String codeFileName = @"C:\Users\Tatsuya\Desktop\pptlatex\latexcode";
+        private static String appDataDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+        private static String outDir = appDataDir + @"\pptlatex";
+        private static String codeFileName = outDir + @"\latexcode";
 
         public string TexCode { get; private set; }
         public Bitmap EqImage { get; private set; }
@@ -53,6 +54,11 @@ namespace PowerPointLatex
             if (isFinal)
             {
                 fileName += "_final";
+            }
+
+            if (!Directory.Exists(outDir))
+            {
+                Directory.CreateDirectory(outDir);
             }
 
             StreamWriter writer = new StreamWriter(String.Format("{0}.tex", fileName));

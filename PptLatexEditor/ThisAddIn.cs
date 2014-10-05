@@ -26,7 +26,7 @@ namespace PowerPointLatex
         {
         }
 
-        // なんらかのオブジェクトがクリックされたときの処理
+        // a certain object is clicked
         private void Application_WindowSelectionChange(PowerPoint.Selection sel)
         {
             if (sel.Type == PowerPoint.PpSelectionType.ppSelectionShapes)

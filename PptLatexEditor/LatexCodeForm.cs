@@ -19,7 +19,7 @@ namespace PowerPointLatex
         private PowerPoint.Shape targetShape;
         private TexEquation texEq;
 
-        // フォームのコンストラクタ
+        // Constructor
         public LatexCodeForm(PowerPoint.Shape shape = null)
         {
             InitializeComponent();
@@ -60,16 +60,16 @@ namespace PowerPointLatex
 
         private void previewButton_Click(object sender, EventArgs e)
         {
-            // コードとフォントサイズの取得
+            // GET: code and fontsize
             String code = codeTextbox.Text;
             int fontSize = (int)numFontSize.Value;
 
-            // コードをファイルに書き込む
+            // save code for the file to be compiled
             renderTexCode(code, fontSize, false);
             int width  = texEq.EqImage.Width;
             int height = texEq.EqImage.Height;
 
-            // 画像が大きければ縮小する
+            // shrink rendered image for display
             if (width > equationBox.Width || height > equationBox.Height)
             {
                 double scaleW = Math.Min(1.0, equationBox.Width  / (double)width);
@@ -85,17 +85,17 @@ namespace PowerPointLatex
             this.Refresh();
         }
 
-        // TeXのコードを画像としてレンダリング
+        // render TeX code
         private void renderTexCode(string code, int fontSize, bool isFinal)
         {
             texEq.Render(code, fontSize, isFinal);
         }
 
-        // OKボタンがクリックされた
+        // OK button is clicked
         private void okButton_Click(object sender, EventArgs e)
         {            
             PowerPoint.Application app = Globals.PptLatexAddin.Application;
-            if (texEq.EqImage != null)
+            //if (texEq.EqImage != null)
             {
                 try
                 {
@@ -122,7 +122,7 @@ namespace PowerPointLatex
             this.Close();
         }
 
-        // 閉じるボタンがクリックされた
+        // Close button is clicked
         private void LatexCodeForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             this.Close();
