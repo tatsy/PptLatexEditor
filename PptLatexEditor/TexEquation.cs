@@ -4,6 +4,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Windows.Forms;
 using PowerPoint = Microsoft.Office.Interop.PowerPoint;
 using Office = Microsoft.Office.Core;
 
@@ -16,6 +17,7 @@ namespace PowerPointLatex
         private static String appDataDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
         private static String outDir = appDataDir + @"\pptlatex";
         private static String codeFileName = outDir + @"\latexcode";
+        private static String configFile = outDir + @"\config.ini";
 
         public string TexCode { get; private set; }
         public Bitmap EqImage { get; private set; }
@@ -70,8 +72,16 @@ namespace PowerPointLatex
             proc.StartInfo.CreateNoWindow = true;
             proc.StartInfo.UseShellExecute = false;
 
-            proc.StartInfo.Arguments = @"/c C:\w32tex\bin\platex.exe -output-directory=" + outDir + " " + fileName + ".tex && "
-                                     + @"C:\w32tex\bin\dvipng.exe -T tight --freetype0 -Q 5 -bd 1000 -o " + fileName + ".png " + fileName + ".dvi && /w";
+            // get latex path
+            StreamReader reader = new StreamReader(configFile);
+            String latexPath = reader.ReadLine();
+            reader.Close();
+
+            String platexCmd = latexPath;
+            String dvipngCmd = Path.GetDirectoryName(latexPath) + @"\dvipng.exe";
+
+            proc.StartInfo.Arguments = @"/c " + platexCmd + " -output-directory=" + outDir + " " + fileName + ".tex && "
+                                     + dvipngCmd + @" -T tight --freetype0 -Q 5 -bd 1000 -o " + fileName + ".png " + fileName + ".dvi && /w";
             proc.Start();
             proc.WaitForExit(3000);
             proc.Close();

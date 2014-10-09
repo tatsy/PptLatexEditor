@@ -40,5 +40,12 @@ namespace PowerPointLatex
                 }
             }
         }
+
+        // Click "Setting" button
+        private void button3_Click(object sender, RibbonControlEventArgs e)
+        {
+            SettingForm setForm = new SettingForm();
+            setForm.Show();
+        }
     }
 }
