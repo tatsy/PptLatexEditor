@@ -122,7 +122,6 @@
             this.codeTextbox.TabIndex = 0;
             this.codeTextbox.Text = "";
             this.codeTextbox.SelectionChanged += new System.EventHandler(this.codeTextbox_SelectionChanged);
-            this.codeTextbox.TextChanged += new System.EventHandler(this.codeTextbox_TextChanged);
             // 
             // LatexCodeForm
             // 

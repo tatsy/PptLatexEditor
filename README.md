@@ -4,7 +4,6 @@ This project provides a plug-in for Microsoft PowerPoint that enables to insert 
 equation images from TeX codes. The interface is very simple and provides only equation generation
 and equation edit. 
 
-
 Installation
 -----
 1. Download "anysizefont.sty" from CTAN
@@ -16,8 +15,8 @@ Installation
 
 2. Compile plugin
 
- For Visual Studio users, just open solution file and compile the project finishes the installation.
- I'm now planning to provide installation file for the other webpage, so please wait for a moment 
- for non VS users.
+ For Visual Studio users, only opening solution file and compiling the project finish the installation.
+ I'm now planning to provide installation file at the other webpage, so please wait for a moment 
+ for if you are a non VS user.
     
  Thanks!

@@ -19,6 +19,10 @@ namespace PowerPointLatex
         private PowerPoint.Shape targetShape;
         private TexEquation texEq;
 
+        private static Regex latexKeywordPattern;
+        private static Regex environmentKeywordPattern;
+        private static Regex greekKeywordPattern;
+
         private static string[] latexKeywords = {
             "int", "sum", "prod",
             "mathbf", "bf", 
@@ -30,6 +34,7 @@ namespace PowerPointLatex
             "sqrt",
             "geq", "leq", "neq",
             "partial",
+            "quad", "qquad"
         };
 
         private static string[] environmentKeywords = {
@@ -44,7 +49,10 @@ namespace PowerPointLatex
         private static char[] beginBlackets = { '(', '{', '[' };
         private static char[] endBlackets = { ')', '}', ']' };
 
-        // Constructor
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="shape">Target shape is input if it is selected</param>
         public LatexCodeForm(PowerPoint.Shape shape = null)
         {
             InitializeComponent();
@@ -65,6 +73,7 @@ namespace PowerPointLatex
                 if (matCode.Count >= 1)
                 {
                     this.codeTextbox.Text = matCode[0].Groups[1].Value;
+                    this.codeTextbox.Select(this.codeTextbox.Text.Length, 0);
                 }
                 else
                 {
@@ -83,6 +92,40 @@ namespace PowerPointLatex
             }
         }
 
+        /// <summary>
+        /// Static constructor
+        /// </summary>
+        static LatexCodeForm()
+        {
+            LatexCodeForm.compileKeywords(latexKeywords, out latexKeywordPattern);
+            LatexCodeForm.compileKeywords(environmentKeywords, out environmentKeywordPattern);
+            LatexCodeForm.compileKeywords(greekKeywords, out greekKeywordPattern);
+        }
+
+        /// <summary>
+        /// Convert keyword array to OR regex pattern
+        /// </summary>
+        /// <param name="keywords"></param>
+        /// <param name="regex"></param>
+        private static void compileKeywords(string[] keywords, out Regex regex)
+        {
+            string pattern = "";
+            for (int i = 0; i < keywords.Length; i++)
+            {
+                pattern += "\\\\" + keywords[i];
+                if (i != keywords.Length - 1)
+                {
+                    pattern += "[^0-9a-zA-Z]|";
+                }
+            }
+            regex = new Regex(pattern);
+        }
+
+        /// <summary>
+        /// Event function: preview button clicked
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void previewButton_Click(object sender, EventArgs e)
         {
             // GET: code and fontsize
@@ -168,14 +211,13 @@ namespace PowerPointLatex
                 codeTextbox.SelectionColor = Color.Black;
                 codeTextbox.SelectionBackColor = Color.White;
 
-
                 // find blacket pair
                 codeTextProcessBlacketPair(currentSelectionStart);
                 codeTextProcessKeywords();
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                MessageBox.Show(ex.StackTrace);
             }
             finally
             {
@@ -244,27 +286,19 @@ namespace PowerPointLatex
 
         private void codeTextProcessKeywords()
         {
-            processKeywords(greekKeywords, Color.Gray);
-            processKeywords(latexKeywords, Color.Blue);
-            processKeywords(environmentKeywords, Color.MediumTurquoise);
+            processKeywords(greekKeywordPattern, Color.Gray);
+            processKeywords(latexKeywordPattern, Color.Blue);
+            processKeywords(environmentKeywordPattern, Color.MediumTurquoise);
         }
 
-        private void processKeywords(string[] keywords, Color color)
+        private void processKeywords(Regex regex, Color color)
         {
             string code = codeTextbox.Text;
-            for (int i = 0; i < keywords.Length; i++)
+            foreach (Match match in regex.Matches(code))
             {
-                Regex reg = new Regex(keywords[i]);
-                foreach (Match match in reg.Matches(code))
-                {
-                    codeTextbox.Select(match.Index, keywords[i].Length);
-                    codeTextbox.SelectionColor = color;
-                }
+                codeTextbox.Select(match.Index, match.Length);
+                codeTextbox.SelectionColor = color;
             }
-        }
-
-        private void codeTextbox_TextChanged(object sender, EventArgs e)
-        {
         }
     }
 }
