@@ -11,7 +11,7 @@ PowerPoint LaTeX Editor (PptLatexEditor)
 
  w32texをお使いの場合にはこの.styファイルを以下のディレクトリに入れてください。
 
-"C:/w32tex/share/texmf-local/tex/latex".
+ "C:/w32tex/share/texmf-local/tex/latex".
 
 2. プラグインのビルド
 
