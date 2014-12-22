@@ -19,6 +19,31 @@ namespace PowerPointLatex
         private PowerPoint.Shape targetShape;
         private TexEquation texEq;
 
+        private static string[] latexKeywords = {
+            "int", "sum", "prod",
+            "mathbf", "bf", 
+            "rightarrow", "leftarrow", "Rightarrow", "Leftarrow",
+            "hat", "tilde", "bar",
+            "bigcap", "bigcup", "bigotimes", "bigoplus",
+            "otimes", "oplus",  "times",
+            "cases", "frac", "left", "right",
+            "sqrt",
+            "geq", "leq", "neq",
+            "partial",
+        };
+
+        private static string[] environmentKeywords = {
+            "begin", "end"                                                        
+        };
+
+        private static string[] greekKeywords = {
+            "alpha", "beta", "gamma", "delta", "epsilon", "varepsilon", "zeta", "eta", "theta", "vartheta", "kappa", "lambda", "mu", "nu",
+            "xi", "pi", "omega", "rho", "varrho", "sigma", "tau", "phi", "varphi", "kai", "psi"
+        };
+
+        private static char[] beginBlackets = { '(', '{', '[' };
+        private static char[] endBlackets = { ')', '}', ']' };
+
         // Constructor
         public LatexCodeForm(PowerPoint.Shape shape = null)
         {
@@ -126,6 +151,120 @@ namespace PowerPointLatex
         private void LatexCodeForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             this.Close();
+        }
+
+        // cursor changed in the code textbox
+        private void codeTextbox_SelectionChanged(object sender, EventArgs e)
+        {
+            int currentSelectionStart = codeTextbox.SelectionStart;
+            int currentSelectionLength = codeTextbox.SelectionLength;
+            try
+            {
+                codeTextbox.SelectionChanged -= codeTextbox_SelectionChanged;
+                string code = codeTextbox.Text;
+
+                // initialize all the text
+                codeTextbox.Select(0, code.Length);
+                codeTextbox.SelectionColor = Color.Black;
+                codeTextbox.SelectionBackColor = Color.White;
+
+
+                // find blacket pair
+                codeTextProcessBlacketPair(currentSelectionStart);
+                codeTextProcessKeywords();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            finally
+            {
+                codeTextbox.Select(currentSelectionStart, currentSelectionLength);
+                codeTextbox.SelectionChanged += codeTextbox_SelectionChanged;
+            }
+        }
+
+        private void codeTextProcessBlacketPair(int currentPosition)
+        {
+            string code = codeTextbox.Text;
+            for (int i = 0; i < beginBlackets.Length; i++)
+            {
+                int beginPosition = -1;
+                int endPosition = -1;
+                if (currentPosition > 0 && code[currentPosition - 1] == endBlackets[i])
+                {
+                    endPosition = currentPosition - 1;
+                    int searchPosition = endPosition;
+                    int countStack = 0;
+                    do
+                    {
+                        if (code[searchPosition] == endBlackets[i]) countStack++;
+                        if (code[searchPosition] == beginBlackets[i])
+                        {
+                            countStack--;
+                            if (countStack == 0)
+                            {
+                                beginPosition = searchPosition;
+                                break;
+                            }
+                        }
+                    } while (--searchPosition >= 0);
+                }
+
+                if (currentPosition < code.Length - 1 && code[currentPosition] == beginBlackets[i])
+                {
+                    beginPosition = currentPosition;
+                    int searchPosition = beginPosition;
+                    int countStack = 0;
+                    do
+                    {
+                        if (code[searchPosition] == beginBlackets[i]) countStack++;
+                        if (code[searchPosition] == endBlackets[i])
+                        {
+                            countStack--;
+                            if (countStack == 0)
+                            {
+                                endPosition = searchPosition;
+                                break;
+                            }
+                        }
+                    } while (++searchPosition < code.Length - 1);
+                }
+
+                if (beginPosition != -1 && endPosition != -1)
+                {
+                    codeTextbox.Select(beginPosition, 1);
+                    codeTextbox.SelectionBackColor = Color.LightGray;
+                    codeTextbox.Select(endPosition, 1);
+                    codeTextbox.SelectionBackColor = Color.LightGray;
+                    break;
+                }
+            }
+        }
+
+        private void codeTextProcessKeywords()
+        {
+            processKeywords(greekKeywords, Color.Gray);
+            processKeywords(latexKeywords, Color.Blue);
+            processKeywords(environmentKeywords, Color.MediumTurquoise);
+        }
+
+        private void processKeywords(string[] keywords, Color color)
+        {
+            string code = codeTextbox.Text;
+            for (int i = 0; i < keywords.Length; i++)
+            {
+                Regex reg = new Regex(keywords[i]);
+                foreach (Match match in reg.Matches(code))
+                {
+                    codeTextbox.Select(match.Index, keywords[i].Length);
+                    codeTextbox.SelectionColor = color;
+                }
+            }
+        }
+
+        private void codeTextbox_TextChanged(object sender, EventArgs e)
+        {
         }
     }
 }
