@@ -2,7 +2,7 @@ PowerPoint LaTeX Editor (PptLatexEditor)
 ==========
 This project provides a plug-in for Microsoft PowerPoint that enables to insert LaTeX rendered
 equation images from TeX codes. The interface is very simple and provides only equation generation
-and equation edit. 
+and equation edit.
 
 Installation
 -----
@@ -16,7 +16,11 @@ Installation
 2. Compile plugin
 
  For Visual Studio users, only opening solution file and compiling the project finish the installation.
- I'm now planning to provide installation file at the other webpage, so please wait for a moment 
+ I'm now planning to provide installation file at the other webpage, so please wait for a moment
  for if you are a non VS user.
+
+3. Initial setting
+
+ This plug-in uses "platex.exe" and "dvipng.exe". Therefore, please specify the location of these files using the "Settings" button in the "TeX" tab.
     
  Thanks!
