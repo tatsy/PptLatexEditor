@@ -32,9 +32,9 @@
             this.previewButton = new System.Windows.Forms.Button();
             this.okButton = new System.Windows.Forms.Button();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.codeTextbox = new System.Windows.Forms.RichTextBox();
             this.panel2 = new System.Windows.Forms.Panel();
             this.numFontSize = new System.Windows.Forms.NumericUpDown();
-            this.codeTextbox = new System.Windows.Forms.RichTextBox();
             ((System.ComponentModel.ISupportInitialize)(this.equationBox)).BeginInit();
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
@@ -45,7 +45,7 @@
             // 
             this.equationBox.Location = new System.Drawing.Point(12, 12);
             this.equationBox.Name = "equationBox";
-            this.equationBox.Padding = new System.Windows.Forms.Padding(5, 5, 5, 5);
+            this.equationBox.Padding = new System.Windows.Forms.Padding(5);
             this.equationBox.Size = new System.Drawing.Size(548, 182);
             this.equationBox.TabIndex = 1;
             this.equationBox.TabStop = false;
@@ -85,6 +85,17 @@
             this.panel1.Size = new System.Drawing.Size(572, 332);
             this.panel1.TabIndex = 4;
             // 
+            // codeTextbox
+            // 
+            this.codeTextbox.Font = new System.Drawing.Font("Consolas", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.codeTextbox.Location = new System.Drawing.Point(12, 200);
+            this.codeTextbox.Name = "codeTextbox";
+            this.codeTextbox.Size = new System.Drawing.Size(548, 96);
+            this.codeTextbox.TabIndex = 0;
+            this.codeTextbox.Text = "";
+            this.codeTextbox.SelectionChanged += new System.EventHandler(this.codeTextbox_SelectionChanged);
+            this.codeTextbox.TextChanged += new System.EventHandler(this.codeTextbox_TextChanged);
+            // 
             // panel2
             // 
             this.panel2.Controls.Add(this.equationBox);
@@ -111,17 +122,6 @@
             0,
             0,
             0});
-            // 
-            // codeTextbox
-            // 
-            this.codeTextbox.Font = new System.Drawing.Font("Consolas", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.codeTextbox.ImeMode = System.Windows.Forms.ImeMode.Off;
-            this.codeTextbox.Location = new System.Drawing.Point(12, 200);
-            this.codeTextbox.Name = "codeTextbox";
-            this.codeTextbox.Size = new System.Drawing.Size(548, 96);
-            this.codeTextbox.TabIndex = 0;
-            this.codeTextbox.Text = "";
-            this.codeTextbox.SelectionChanged += new System.EventHandler(this.codeTextbox_SelectionChanged);
             // 
             // LatexCodeForm
             // 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text.RegularExpressions;
 using System.Drawing;
 using System.IO;
 using System.Collections.Generic;
@@ -68,29 +69,42 @@ namespace PowerPointLatex
             writer.Close();
 
             System.Diagnostics.Process proc = new System.Diagnostics.Process();
-            proc.StartInfo.FileName = System.Environment.GetEnvironmentVariable("ComSpec");
-            proc.StartInfo.CreateNoWindow = true;
-            proc.StartInfo.UseShellExecute = false;
-
-            // get latex path
-            StreamReader reader = new StreamReader(configFile);
-            String latexPath = reader.ReadLine();
-            reader.Close();
-
-            String platexCmd = latexPath;
-            String dvipngCmd = Path.GetDirectoryName(latexPath) + @"\dvipng.exe";
-
-            proc.StartInfo.Arguments = @"/c " + platexCmd + " -output-directory=" + outDir + " " + fileName + ".tex && "
-                                     + dvipngCmd + @" -T tight --freetype0 -Q 5 -bd 1000 -o " + fileName + ".png " + fileName + ".dvi && /w";
-            proc.Start();
-            proc.WaitForExit(3000);
-            proc.Close();
-
-            if (File.Exists(fileName + ".png"))
+            try
             {
-                Bitmap temp = (Bitmap)Image.FromFile(fileName + ".png");
-                EqImage = new Bitmap(temp);
-                temp.Dispose();
+                proc.StartInfo.FileName = System.Environment.GetEnvironmentVariable("ComSpec");
+                proc.StartInfo.CreateNoWindow = true;
+                proc.StartInfo.UseShellExecute = false;
+                proc.StartInfo.RedirectStandardInput = false;
+                proc.StartInfo.RedirectStandardOutput = true;
+
+                // get latex path
+                StreamReader reader = new StreamReader(configFile);
+                String latexPath = reader.ReadLine();
+                reader.Close();
+
+                String platexCmd = latexPath;
+                String dvipngCmd = Path.GetDirectoryName(latexPath) + @"\dvipng.exe";
+
+                proc.StartInfo.Arguments = @"/c " + platexCmd + " -output-directory=" + outDir + " " + fileName + ".tex && "
+                                         + dvipngCmd + @" -T tight --freetype0 -Q 5 -bd 1000 -o " + fileName + ".png " + fileName + ".dvi && /w";
+                proc.Start();
+                checkLatexError(proc.StandardOutput);
+
+                if (File.Exists(fileName + ".png"))
+                {
+                    Bitmap temp = (Bitmap)Image.FromFile(fileName + ".png");
+                    EqImage = new Bitmap(temp);
+                    temp.Dispose();
+                }
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+            finally
+            {
+                proc.WaitForExit(3000);
+                proc.Close();
             }
         }
 
@@ -98,6 +112,18 @@ namespace PowerPointLatex
         {
             PowerPoint.Application app = Globals.PptLatexAddin.Application;
             return app.ActiveWindow.Selection.SlideRange.Shapes.AddPicture(codeFileName + "_final.png", Office.MsoTriState.msoFalse, Office.MsoTriState.msoTrue, 100, 100);
+        }
+
+        private void checkLatexError(StreamReader stdOutputStream)
+        {
+            string line;
+            while ((line = stdOutputStream.ReadLine()) != null)
+            {
+                if (line.Contains("Emergency stop"))
+                {
+                    throw new Exception("Compilation failed !!");
+                }
+            }
         }
     }
 }

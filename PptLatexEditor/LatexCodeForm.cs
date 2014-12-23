@@ -24,15 +24,15 @@ namespace PowerPointLatex
         private static Regex greekKeywordPattern;
 
         private static string[] latexKeywords = {
-            "int", "sum", "prod",
-            "mathbf", "bf", 
+            "int", "oint", "sum", "prod", "min", "max", "lim", "infty", "ell",
+            "bf", "rm", "mathbf", "mathcal", "mathbb", "mbox", "text", "textrm",
             "rightarrow", "leftarrow", "Rightarrow", "Leftarrow",
-            "hat", "tilde", "bar",
+            "hat", "tilde", "bar", 
             "bigcap", "bigcup", "bigotimes", "bigoplus",
-            "otimes", "oplus",  "times",
-            "cases", "frac", "left", "right",
+            "otimes", "oplus",  "times", "pm", "mp", 
+            "frac", "cfrac", "left", "right",
             "sqrt",
-            "geq", "leq", "neq",
+            "ll", "gg", "geq", "leq", "neq","approx", "sim", "in", "equiv",
             "partial",
             "quad", "qquad"
         };
@@ -42,8 +42,8 @@ namespace PowerPointLatex
         };
 
         private static string[] greekKeywords = {
-            "alpha", "beta", "gamma", "delta", "epsilon", "varepsilon", "zeta", "eta", "theta", "vartheta", "kappa", "lambda", "mu", "nu",
-            "xi", "pi", "omega", "rho", "varrho", "sigma", "tau", "phi", "varphi", "kai", "psi"
+            "alpha", "beta", "gamma", "Gamma", "delta", "Delta", "epsilon", "varepsilon", "zeta", "eta", "theta", "Theta", "vartheta", "kappa", "lambda", "Lambda", "mu", "nu",
+            "xi", "pi", "omega", "rho", "varrho", "sigma", "Sigma", "tau", "phi", "Phi", "varphi", "kai", "psi", "Psi"
         };
 
         private static char[] beginBlackets = { '(', '{', '[' };
@@ -62,7 +62,7 @@ namespace PowerPointLatex
             if (shape == null)
             {
                 this.codeTextbox.Text = "";
-            } 
+            }
             else
             {
                 targetShape = shape;
@@ -133,7 +133,15 @@ namespace PowerPointLatex
             int fontSize = (int)numFontSize.Value;
 
             // save code for the file to be compiled
-            renderTexCode(code, fontSize, false);
+            try
+            {
+                renderTexCode(code, fontSize, false);
+            }
+            catch
+            {
+                return;
+            }
+
             int width  = texEq.EqImage.Width;
             int height = texEq.EqImage.Height;
 
@@ -156,7 +164,15 @@ namespace PowerPointLatex
         // render TeX code
         private void renderTexCode(string code, int fontSize, bool isFinal)
         {
-            texEq.Render(code, fontSize, isFinal);
+            try
+            {
+                texEq.Render(code, fontSize, isFinal);
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(e.Message);
+                throw e;
+            }
         }
 
         // OK button is clicked
@@ -182,12 +198,15 @@ namespace PowerPointLatex
                         targetShape.Delete();
                     }
                 }
-                catch (Exception ex)
+                catch
                 {
-                    MessageBox.Show(ex.Message);
+                    return;
+                }
+                finally
+                {
+                    this.Close();
                 }
             }
-            this.Close();
         }
 
         // Close button is clicked
@@ -199,21 +218,39 @@ namespace PowerPointLatex
         // cursor changed in the code textbox
         private void codeTextbox_SelectionChanged(object sender, EventArgs e)
         {
+            syntaxHighlight();
+        }
+
+        private void codeTextbox_TextChanged(object sender, EventArgs e)
+        {
+            syntaxHighlight(true);
+        }
+
+        private void syntaxHighlight(bool isUpdateKeyword = false)
+        {
             int currentSelectionStart = codeTextbox.SelectionStart;
             int currentSelectionLength = codeTextbox.SelectionLength;
             try
             {
                 codeTextbox.SelectionChanged -= codeTextbox_SelectionChanged;
+                codeTextbox.TextChanged -= codeTextbox_TextChanged;
+
                 string code = codeTextbox.Text;
 
                 // initialize all the text
                 codeTextbox.Select(0, code.Length);
-                codeTextbox.SelectionColor = Color.Black;
                 codeTextbox.SelectionBackColor = Color.White;
+                if (isUpdateKeyword)
+                {
+                    codeTextbox.SelectionColor = Color.Black;
+                }
 
                 // find blacket pair
                 codeTextProcessBlacketPair(currentSelectionStart);
-                codeTextProcessKeywords();
+                if (isUpdateKeyword)
+                {
+                    codeTextProcessKeywords();
+                }
             }
             catch (Exception ex)
             {
@@ -223,6 +260,7 @@ namespace PowerPointLatex
             {
                 codeTextbox.Select(currentSelectionStart, currentSelectionLength);
                 codeTextbox.SelectionChanged += codeTextbox_SelectionChanged;
+                codeTextbox.TextChanged += codeTextbox_TextChanged;
             }
         }
 

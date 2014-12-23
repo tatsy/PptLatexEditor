@@ -9,7 +9,6 @@ using Office = Microsoft.Office.Core;
 using Microsoft.Office.Tools;
 using Microsoft.Office.Interop.PowerPoint;
 using System.Diagnostics;
-using Microsoft.Office.Tools;
 using System.ComponentModel;
 
 
