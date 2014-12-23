@@ -73,7 +73,7 @@ namespace PowerPointLatex
                 if (matCode.Count >= 1)
                 {
                     this.codeTextbox.Text = matCode[0].Groups[1].Value;
-                    this.codeTextbox.Select(this.codeTextbox.Text.Length, 0);
+                    this.codeTextbox_TextChanged(this, new EventArgs());
                 }
                 else
                 {
