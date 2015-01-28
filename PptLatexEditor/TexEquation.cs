@@ -11,7 +11,14 @@ using Office = Microsoft.Office.Core;
 
 namespace PowerPointLatex
 {
-    class TexEquation
+    enum RenderFormat
+    {
+        EPS,
+        PDF,
+        Image
+    }
+
+    static class TexEquation
     {
         private static char[] trimableLetters = new char[] { '\n', '\r' };
 
@@ -20,16 +27,94 @@ namespace PowerPointLatex
         private static String codeFileName = outDir + @"\latexcode";
         private static String configFile = outDir + @"\config.ini";
 
-        public string TexCode { get; private set; }
-        public Bitmap EqImage { get; private set; }
-
-        public TexEquation()
+        public static string Render(String texCode, RenderFormat renderFormat = RenderFormat.Image)
         {
-            TexCode = "";
-            EqImage = null;
+
+            String fileName = codeFileName;
+
+            if (!Directory.Exists(outDir))
+            {
+                Directory.CreateDirectory(outDir);
+            }
+
+            using (StreamWriter writer = new StreamWriter(String.Format("{0}.tex", fileName)))
+            {
+                writer.Write(texCode);
+            }
+
+            return doRender(fileName, renderFormat);
         }
 
-        public void Render(String code, int fontSize, bool isFinal)
+        /// <summary>
+        /// Render specified latex file and return output filename
+        /// </summary>
+        /// <param name="fileName">LaTeX souce code base name</param>
+        /// <returns>output image file such as JPEG, PNG, EPS, and PDF</returns>
+        private static string doRender(string baseName, RenderFormat renderFormat)
+        {
+            System.Diagnostics.Process proc = new System.Diagnostics.Process();
+            string outfile = "";
+            try
+            {
+                proc.StartInfo.FileName = System.Environment.GetEnvironmentVariable("ComSpec");
+                proc.StartInfo.CreateNoWindow = true;
+                proc.StartInfo.UseShellExecute = false;
+                proc.StartInfo.RedirectStandardInput = false;
+                proc.StartInfo.RedirectStandardOutput = true;
+
+                // get latex path
+                StreamReader reader = new StreamReader(configFile);
+                String latexPath = reader.ReadLine();
+                reader.Close();
+
+                String platexCmd = string.Format("{0} -output-directory={1} {2}.tex", latexPath, outDir, baseName);
+                String dvipngCmd = string.Format("{0} -T tight --freetype0 -Q 5 -bd 1000 -o {1}.png {1}.dvi", Path.Combine(Path.GetDirectoryName(latexPath), "dvipng.exe"), baseName);
+                String dvipsCmd  = string.Format("dvips -E -Ppdf {0}.dvi -o {0}.eps", baseName);
+                String rungsCmd = string.Format("gswin32c -dSAFER -q -dBATCH -dNOPAUSE -sDEVICE=epswrite -dEPSCrop -r9600 -sOutputFile={0}_outline.eps {0}.eps", baseName);
+                String ps2pdfCmd = string.Format("ps2pdf {0}_outline.eps {0}.pdf", baseName);
+
+                proc.StartInfo.Arguments = @"/c " + platexCmd;
+                if (renderFormat == RenderFormat.Image)
+                {
+                    proc.StartInfo.Arguments += @" && " + dvipngCmd;
+                    outfile = baseName + ".png";
+                }
+                else if (renderFormat == RenderFormat.EPS)
+                {
+                    proc.StartInfo.Arguments += @" && " + dvipsCmd;
+                    proc.StartInfo.Arguments += @" && " + rungsCmd;
+                    outfile = baseName + "_outline.eps";
+                }
+
+                else if (renderFormat == RenderFormat.PDF)
+                {
+                    proc.StartInfo.Arguments += @" && " + dvipsCmd;
+                    proc.StartInfo.Arguments += @" && " + rungsCmd;
+                    proc.StartInfo.Arguments += @" && " + ps2pdfCmd;
+                    outfile = baseName + ".pdf";
+                }
+                proc.Start();
+                checkLatexError(proc.StandardOutput);
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+            finally
+            {
+                proc.WaitForExit(3000);
+                proc.Close();
+            }
+            return outfile;
+        }
+
+        public static PowerPoint.Shape GetImageShape()
+        {
+            PowerPoint.Application app = Globals.PptLatexAddin.Application;
+            return app.ActiveWindow.Selection.SlideRange.Shapes.AddPicture(codeFileName + ".png", Office.MsoTriState.msoFalse, Office.MsoTriState.msoTrue, 100, 100);
+        }
+
+        public static string WrapLatexEquationCode(string code, int fontSize, bool isFinal)
         {
             int renderFontSize = fontSize;
             if (isFinal)
@@ -51,70 +136,10 @@ namespace PowerPointLatex
             stream.WriteLine("\\end{eqnarray*}");
             stream.WriteLine("\\end{document}");
             stream.Close();
-            TexCode = stream.ToString();
-
-            String fileName = codeFileName;
-            if (isFinal)
-            {
-                fileName += "_final";
-            }
-
-            if (!Directory.Exists(outDir))
-            {
-                Directory.CreateDirectory(outDir);
-            }
-
-            StreamWriter writer = new StreamWriter(String.Format("{0}.tex", fileName));
-            writer.Write(TexCode);
-            writer.Close();
-
-            System.Diagnostics.Process proc = new System.Diagnostics.Process();
-            try
-            {
-                proc.StartInfo.FileName = System.Environment.GetEnvironmentVariable("ComSpec");
-                proc.StartInfo.CreateNoWindow = true;
-                proc.StartInfo.UseShellExecute = false;
-                proc.StartInfo.RedirectStandardInput = false;
-                proc.StartInfo.RedirectStandardOutput = true;
-
-                // get latex path
-                StreamReader reader = new StreamReader(configFile);
-                String latexPath = reader.ReadLine();
-                reader.Close();
-
-                String platexCmd = latexPath;
-                String dvipngCmd = Path.GetDirectoryName(latexPath) + @"\dvipng.exe";
-
-                proc.StartInfo.Arguments = @"/c " + platexCmd + " -output-directory=" + outDir + " " + fileName + ".tex && "
-                                         + dvipngCmd + @" -T tight --freetype0 -Q 5 -bd 1000 -o " + fileName + ".png " + fileName + ".dvi && /w";
-                proc.Start();
-                checkLatexError(proc.StandardOutput);
-
-                if (File.Exists(fileName + ".png"))
-                {
-                    Bitmap temp = (Bitmap)Image.FromFile(fileName + ".png");
-                    EqImage = new Bitmap(temp);
-                    temp.Dispose();
-                }
-            }
-            catch (Exception e)
-            {
-                throw e;
-            }
-            finally
-            {
-                proc.WaitForExit(3000);
-                proc.Close();
-            }
+            return stream.ToString();
         }
 
-        public PowerPoint.Shape GetImageShape()
-        {
-            PowerPoint.Application app = Globals.PptLatexAddin.Application;
-            return app.ActiveWindow.Selection.SlideRange.Shapes.AddPicture(codeFileName + "_final.png", Office.MsoTriState.msoFalse, Office.MsoTriState.msoTrue, 100, 100);
-        }
-
-        private void checkLatexError(StreamReader stdOutputStream)
+        private static void checkLatexError(StreamReader stdOutputStream)
         {
             string line;
             while ((line = stdOutputStream.ReadLine()) != null)

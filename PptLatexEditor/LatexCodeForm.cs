@@ -17,8 +17,11 @@ namespace PowerPointLatex
     {
         private PowerPoint.Shapes shapes;
         private PowerPoint.Shape targetShape;
-        private TexEquation texEq;
 
+        private bool isSelectBackwardly = false;
+        int currentSelectionStart = 0;
+        int currentSelectionLength = 0;
+        
         private static Regex latexKeywordPattern;
         private static Regex environmentKeywordPattern;
         private static Regex greekKeywordPattern;
@@ -57,7 +60,6 @@ namespace PowerPointLatex
         {
             InitializeComponent();
             shapes = Globals.PptLatexAddin.Application.ActiveWindow.Selection.SlideRange.Shapes;
-            texEq  = new TexEquation();
 
             if (shape == null)
             {
@@ -133,17 +135,20 @@ namespace PowerPointLatex
             int fontSize = (int)numFontSize.Value;
 
             // save code for the file to be compiled
+            Bitmap eqImage = null;
             try
             {
-                renderTexCode(code, fontSize, false);
+                code = TexEquation.WrapLatexEquationCode(code, fontSize, false);
+                eqImage = renderTexCode(code);
             }
-            catch
+            catch(Exception ex)
             {
+                MessageBox.Show(ex.Message);
                 return;
             }
 
-            int width  = texEq.EqImage.Width;
-            int height = texEq.EqImage.Height;
+            int width  = eqImage.Width;
+            int height = eqImage.Height;
 
             // shrink rendered image for display
             if (width > equationBox.Width || height > equationBox.Height)
@@ -154,7 +159,8 @@ namespace PowerPointLatex
                 width  = (int)(width  * scale);
                 height = (int)(height * scale);
             }
-            equationBox.Image = new Bitmap(texEq.EqImage, width, height);
+
+            equationBox.Image = new Bitmap(eqImage, width, height);
             equationBox.Location = new Point((equationBox.Parent.ClientSize.Width / 2) - (width / 2),
                               (equationBox.Parent.ClientSize.Height / 2) - (height / 2));
             equationBox.Refresh();
@@ -162,11 +168,15 @@ namespace PowerPointLatex
         }
 
         // render TeX code
-        private void renderTexCode(string code, int fontSize, bool isFinal)
+        private Bitmap renderTexCode(string code)
         {
             try
             {
-                texEq.Render(code, fontSize, isFinal);
+                string outfile = TexEquation.Render(code);
+                Image temp = Image.FromFile(outfile);
+                Bitmap ret = new Bitmap(temp);
+                temp.Dispose();
+                return ret;
             }
             catch (Exception e)
             {
@@ -185,12 +195,13 @@ namespace PowerPointLatex
                 {
                     String code = codeTextbox.Text;
                     int fontSize = (int)numFontSize.Value;
-                    renderTexCode(code, fontSize, true);
+                    code = TexEquation.WrapLatexEquationCode(code, fontSize, true);
+                    renderTexCode(code);
 
-                    PowerPoint.Shape picBox = texEq.GetImageShape();
+                    PowerPoint.Shape picBox = TexEquation.GetImageShape();
                     picBox.ScaleWidth(0.5f, Office.MsoTriState.msoTrue);
                                         
-                    picBox.AlternativeText = texEq.TexCode;
+                    picBox.AlternativeText = code;
                     if (targetShape != null)
                     {
                         picBox.Top = targetShape.Top;
@@ -218,6 +229,16 @@ namespace PowerPointLatex
         // cursor changed in the code textbox
         private void codeTextbox_SelectionChanged(object sender, EventArgs e)
         {
+            if (isSelectBackwardly)
+            {
+                currentSelectionStart = Math.Max(0, currentSelectionStart - 1);
+                currentSelectionLength = currentSelectionLength + 1;
+            }
+            else
+            {
+                currentSelectionStart = codeTextbox.SelectionStart;
+                currentSelectionLength = codeTextbox.SelectionLength;
+            }
             syntaxHighlight();
         }
 
@@ -228,8 +249,6 @@ namespace PowerPointLatex
 
         private void syntaxHighlight(bool isUpdateKeyword = false)
         {
-            int currentSelectionStart = codeTextbox.SelectionStart;
-            int currentSelectionLength = codeTextbox.SelectionLength;
             try
             {
                 codeTextbox.SelectionChanged -= codeTextbox_SelectionChanged;

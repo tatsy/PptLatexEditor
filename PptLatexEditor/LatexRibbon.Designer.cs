@@ -40,6 +40,7 @@
             this.button2 = this.Factory.CreateRibbonButton();
             this.group2 = this.Factory.CreateRibbonGroup();
             this.button3 = this.Factory.CreateRibbonButton();
+            this.SaveAsButton = this.Factory.CreateRibbonButton();
             this.tabTexEdit.SuspendLayout();
             this.group1.SuspendLayout();
             this.group2.SuspendLayout();
@@ -78,6 +79,7 @@
             // group2
             // 
             this.group2.Items.Add(this.button3);
+            this.group2.Items.Add(this.SaveAsButton);
             this.group2.Name = "group2";
             // 
             // button3
@@ -87,6 +89,14 @@
             this.button3.OfficeImageId = "SearchTools";
             this.button3.ShowImage = true;
             this.button3.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.button3_Click);
+            // 
+            // SaveAsButton
+            // 
+            this.SaveAsButton.Label = "Save as";
+            this.SaveAsButton.Name = "SaveAsButton";
+            this.SaveAsButton.OfficeImageId = "AutoSigInsertPictureFromFile";
+            this.SaveAsButton.ShowImage = true;
+            this.SaveAsButton.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.SaveAsButton_Click);
             // 
             // LatexRibbon
             // 
@@ -111,6 +121,7 @@
         internal Microsoft.Office.Tools.Ribbon.RibbonButton button2;
         internal Microsoft.Office.Tools.Ribbon.RibbonGroup group2;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton button3;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton SaveAsButton;
     }
 
     partial class ThisRibbonCollection
