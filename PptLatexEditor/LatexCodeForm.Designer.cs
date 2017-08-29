@@ -129,7 +129,7 @@
             // codeTextbox
             // 
             this.codeTextbox.Font = new System.Drawing.Font("Consolas", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.codeTextbox.ImeMode = System.Windows.Forms.ImeMode.Alpha;
+            this.codeTextbox.ImeMode = System.Windows.Forms.ImeMode.Off;
             this.codeTextbox.Location = new System.Drawing.Point(12, 200);
             this.codeTextbox.Name = "codeTextbox";
             this.codeTextbox.Size = new System.Drawing.Size(548, 96);
