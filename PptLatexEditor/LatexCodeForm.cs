@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Threading;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -18,37 +19,11 @@ namespace PowerPointLatex
         private PowerPoint.Shapes shapes;
         private PowerPoint.Shape targetShape;
 
-        private bool isSelectBackwardly = false;
         int currentSelectionStart = 0;
         int currentSelectionLength = 0;
-        
-        private static Regex latexKeywordPattern;
-        private static Regex environmentKeywordPattern;
-        private static Regex greekKeywordPattern;
+        bool currentSelectionL2R = true;
 
-        private static string[] latexKeywords = {
-            "int", "oint", "sum", "prod", "min", "max", "lim", "infty", "ell",
-            "bf", "rm", "mathbf", "mathcal", "mathbb", "mbox", "text", "textrm",
-            "rightarrow", "leftarrow", "Rightarrow", "Leftarrow",
-            "hat", "tilde", "bar", 
-            "bigcap", "bigcup", "bigotimes", "bigoplus",
-            "otimes", "oplus",  "times", "pm", "mp", 
-            "frac", "cfrac", "left", "right",
-            "sqrt",
-            "ll", "gg", "geq", "leq", "neq","approx", "sim", "in", "equiv",
-            "partial",
-            "quad", "qquad"
-        };
-
-        private static string[] environmentKeywords = {
-            "begin", "end"                                                        
-        };
-
-        private static string[] greekKeywords = {
-            "alpha", "beta", "gamma", "Gamma", "delta", "Delta", "epsilon", "varepsilon", "zeta", "eta", "theta", "Theta", "vartheta", "kappa", "lambda", "Lambda", "mu", "nu",
-            "xi", "pi", "omega", "rho", "varrho", "sigma", "Sigma", "tau", "phi", "Phi", "varphi", "kai", "psi", "Psi"
-        };
-
+        private static TrieTree latexKeywordTrie;
         private static char[] beginBlackets = { '(', '{', '[' };
         private static char[] endBlackets = { ')', '}', ']' };
 
@@ -71,6 +46,7 @@ namespace PowerPointLatex
                 String texCode = shape.AlternativeText;
                 String patCode = @"\\begin\{eqnarray\*\}[\r\n]{0,2}(.*)[\r\n]{0,2}\\end\{eqnarray\*\}";
                 String patSize = "% --Font Size: ([0-9]+)pt--";
+                String patColor = @"\\definecolor\{mycolor\}\{rgb\}\{([0-9\.,\s]+)\}";
                 MatchCollection matCode = Regex.Matches(texCode, patCode, RegexOptions.Singleline);
                 if (matCode.Count >= 1)
                 {
@@ -91,6 +67,20 @@ namespace PowerPointLatex
                 {
                     this.numFontSize.Value = 30;
                 }
+
+                MatchCollection matColor = Regex.Matches(texCode, patColor, RegexOptions.Singleline);
+                if (matColor.Count >= 1)
+                {
+                    String[] items = Regex.Split(matColor[0].Groups[1].Value, ",");
+                    int r = Math.Max(0, Math.Min((int)(255.0 * Double.Parse(items[0])), 255));
+                    int g = Math.Max(0, Math.Min((int)(255.0 * Double.Parse(items[1])), 255));
+                    int b = Math.Max(0, Math.Min((int)(255.0 * Double.Parse(items[2])), 255));
+                    this.colorBox.BackColor = Color.FromArgb(r, g, b);
+                }
+                else
+                {
+                    this.colorBox.BackColor = Color.Black;
+                }
             }
         }
 
@@ -99,28 +89,15 @@ namespace PowerPointLatex
         /// </summary>
         static LatexCodeForm()
         {
-            LatexCodeForm.compileKeywords(latexKeywords, out latexKeywordPattern);
-            LatexCodeForm.compileKeywords(environmentKeywords, out environmentKeywordPattern);
-            LatexCodeForm.compileKeywords(greekKeywords, out greekKeywordPattern);
-        }
-
-        /// <summary>
-        /// Convert keyword array to OR regex pattern
-        /// </summary>
-        /// <param name="keywords"></param>
-        /// <param name="regex"></param>
-        private static void compileKeywords(string[] keywords, out Regex regex)
-        {
-            string pattern = "";
-            for (int i = 0; i < keywords.Length; i++)
+            List<String> keywords = new List<String>();
+            foreach (String s in Regex.Split(Properties.Resources.LatexKeywords, "\n"))
             {
-                pattern += "\\\\" + keywords[i];
-                if (i != keywords.Length - 1)
+                if (s.Length > 0)
                 {
-                    pattern += "[^0-9a-zA-Z]|";
+                    keywords.Add(s.Trim());
                 }
             }
-            regex = new Regex(pattern);
+            latexKeywordTrie = new TrieTree(keywords);
         }
 
         /// <summary>
@@ -138,7 +115,7 @@ namespace PowerPointLatex
             Bitmap eqImage = null;
             try
             {
-                code = TexEquation.WrapLatexEquationCode(code, fontSize, false);
+                code = TexEquation.WrapLatexEquationCode(code, fontSize, colorBox.BackColor, false);
                 eqImage = renderTexCode(code);
             }
             catch(Exception ex)
@@ -161,22 +138,40 @@ namespace PowerPointLatex
             }
 
             equationBox.Image = new Bitmap(eqImage, width, height);
-            equationBox.Location = new Point((equationBox.Parent.ClientSize.Width / 2) - (width / 2),
-                              (equationBox.Parent.ClientSize.Height / 2) - (height / 2));
-            equationBox.Refresh();
+            //equationBox.Location = new Point((equationBox.Parent.ClientSize.Width / 2) - (width / 2),
+            //                  (equationBox.Parent.ClientSize.Height / 2) - (height / 2));
+            //equationBox.Refresh();
             this.Refresh();
         }
 
         // render TeX code
         private Bitmap renderTexCode(string code)
         {
+            int trials = 10;
+            int renderTimeout = 500;
             try
             {
-                string outfile = TexEquation.Render(code);
-                Image temp = Image.FromFile(outfile);
-                Bitmap ret = new Bitmap(temp);
-                temp.Dispose();
-                return ret;
+                string outfile = null;
+                Thread thread = new Thread(new ThreadStart( () => {
+                        outfile = TexEquation.Render(code);
+                }));
+
+                thread.Start();
+                for (int i = 0; i < trials; i++)
+                {
+                    Thread.Sleep(renderTimeout);
+                    if (outfile != null)
+                    {
+                        Image temp = Image.FromFile(outfile);
+                        Bitmap ret = new Bitmap(temp);
+                        temp.Dispose();
+                        return ret;
+                    }
+                }
+
+                thread.Abort();
+                MessageBox.Show("Compilation failed!!");
+                return null;
             }
             catch (Exception e)
             {
@@ -195,7 +190,7 @@ namespace PowerPointLatex
                 {
                     String code = codeTextbox.Text;
                     int fontSize = (int)numFontSize.Value;
-                    code = TexEquation.WrapLatexEquationCode(code, fontSize, true);
+                    code = TexEquation.WrapLatexEquationCode(code, fontSize, colorBox.BackColor, true);
                     renderTexCode(code);
 
                     PowerPoint.Shape picBox = TexEquation.GetImageShape();
@@ -229,16 +224,9 @@ namespace PowerPointLatex
         // cursor changed in the code textbox
         private void codeTextbox_SelectionChanged(object sender, EventArgs e)
         {
-            if (isSelectBackwardly)
-            {
-                currentSelectionStart = Math.Max(0, currentSelectionStart - 1);
-                currentSelectionLength = currentSelectionLength + 1;
-            }
-            else
-            {
-                currentSelectionStart = codeTextbox.SelectionStart;
-                currentSelectionLength = codeTextbox.SelectionLength;
-            }
+            currentSelectionL2R = (currentSelectionStart == codeTextbox.SelectionStart);
+            currentSelectionStart = codeTextbox.SelectionStart;
+            currentSelectionLength = codeTextbox.SelectionLength;
             syntaxHighlight();
         }
 
@@ -277,7 +265,15 @@ namespace PowerPointLatex
             }
             finally
             {
-                codeTextbox.Select(currentSelectionStart, currentSelectionLength);
+                if (currentSelectionL2R)
+                {
+                    codeTextbox.Select(currentSelectionStart, currentSelectionLength);
+                }
+                else
+                {
+                    codeTextbox.Select(currentSelectionStart + currentSelectionLength, -currentSelectionLength);
+                }
+                
                 codeTextbox.SelectionChanged += codeTextbox_SelectionChanged;
                 codeTextbox.TextChanged += codeTextbox_TextChanged;
             }
@@ -343,9 +339,26 @@ namespace PowerPointLatex
 
         private void codeTextProcessKeywords()
         {
-            processKeywords(greekKeywordPattern, Color.Gray);
-            processKeywords(latexKeywordPattern, Color.Blue);
-            processKeywords(environmentKeywordPattern, Color.MediumTurquoise);
+            String code = codeTextbox.Text;
+            int codeSize = code.Length;
+            for (int i = 0; i < codeSize; i++)
+            {
+                if (i == 0 || !Char.IsLetter(code[i - 1]))
+                {
+                    for (int j = i; j < codeSize; j++)
+                    {
+                        if (j == codeSize - 1 || !Char.IsLetter(code[j + 1]))
+                        {
+                            String subCode = code.Substring(i, j - i + 1);
+                            if (latexKeywordTrie.Contain(subCode))
+                            {
+                                codeTextbox.Select(i, j - i + 1);
+                                codeTextbox.SelectionColor = Color.Gray;
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         private void processKeywords(Regex regex, Color color)
@@ -355,6 +368,32 @@ namespace PowerPointLatex
             {
                 codeTextbox.Select(match.Index, match.Length);
                 codeTextbox.SelectionColor = color;
+            }
+        }
+
+        private void colorBox_Click(object sender, EventArgs e)
+        {
+            if (colorDialog1.ShowDialog() == DialogResult.OK)
+            {
+                colorBox.BackColor = colorDialog1.Color;
+            }
+        }
+
+        private void equationBox_Paint(object sender, PaintEventArgs e)
+        {
+            Brush brush = new SolidBrush(SystemColors.Control);
+            Graphics g = e.Graphics;
+            g.FillRectangle(brush, 0, 0, equationBox.Width, equationBox.Height);
+
+            Image image = equationBox.Image;
+            if (equationBox.Image != null)
+            {
+                g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                g.DrawImage(image,
+                    equationBox.Width / 2 - image.Width / 2,  
+                    equationBox.Height / 2 - image.Height / 2,
+                    image.Width,
+                    image.Height);
             }
         }
     }

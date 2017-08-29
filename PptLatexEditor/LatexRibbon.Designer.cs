@@ -36,14 +36,15 @@
         {
             this.tabTexEdit = this.Factory.CreateRibbonTab();
             this.group1 = this.Factory.CreateRibbonGroup();
+            this.group2 = this.Factory.CreateRibbonGroup();
             this.button1 = this.Factory.CreateRibbonButton();
             this.button2 = this.Factory.CreateRibbonButton();
-            this.group2 = this.Factory.CreateRibbonGroup();
             this.button3 = this.Factory.CreateRibbonButton();
             this.SaveAsButton = this.Factory.CreateRibbonButton();
             this.tabTexEdit.SuspendLayout();
             this.group1.SuspendLayout();
             this.group2.SuspendLayout();
+            this.SuspendLayout();
             // 
             // tabTexEdit
             // 
@@ -57,6 +58,12 @@
             this.group1.Items.Add(this.button1);
             this.group1.Items.Add(this.button2);
             this.group1.Name = "group1";
+            // 
+            // group2
+            // 
+            this.group2.Items.Add(this.button3);
+            this.group2.Items.Add(this.SaveAsButton);
+            this.group2.Name = "group2";
             // 
             // button1
             // 
@@ -75,12 +82,6 @@
             this.button2.OfficeImageId = "SignatureLineInsert";
             this.button2.ShowImage = true;
             this.button2.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.button2_Click);
-            // 
-            // group2
-            // 
-            this.group2.Items.Add(this.button3);
-            this.group2.Items.Add(this.SaveAsButton);
-            this.group2.Name = "group2";
             // 
             // button3
             // 
@@ -110,6 +111,7 @@
             this.group1.PerformLayout();
             this.group2.ResumeLayout(false);
             this.group2.PerformLayout();
+            this.ResumeLayout(false);
 
         }
 

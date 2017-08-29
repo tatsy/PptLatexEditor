@@ -19,7 +19,7 @@ namespace PowerPointLatex
 
         private void LatexRibbon_Load(object sender, RibbonUIEventArgs e)
         {            
-            saveFileDialog = new SaveFileDialog();            
+            saveFileDialog = new SaveFileDialog();
         }
 
 

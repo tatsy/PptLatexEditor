@@ -114,7 +114,7 @@ namespace PowerPointLatex
             return app.ActiveWindow.Selection.SlideRange.Shapes.AddPicture(codeFileName + ".png", Office.MsoTriState.msoFalse, Office.MsoTriState.msoTrue, 100, 100);
         }
 
-        public static string WrapLatexEquationCode(string code, int fontSize, bool isFinal)
+        public static string WrapLatexEquationCode(string code, int fontSize, Color textColor, bool isFinal)
         {
             int renderFontSize = fontSize;
             if (isFinal)
@@ -122,18 +122,24 @@ namespace PowerPointLatex
                 renderFontSize = (int)(1.5 * renderFontSize);
             }
 
+            String colorDesc = String.Format("{0}, {1}, {2}", textColor.R / 255.0, textColor.G / 255.0, textColor.B / 255);
+
             StringWriter stream = new StringWriter();
             stream.WriteLine("% --PptLatexEditor--");
             stream.WriteLine("\\documentclass{article}");
             stream.WriteLine("\\usepackage{amsmath,amssymb}");
+            stream.WriteLine("\\usepackage{xcolor}");
             stream.WriteLine("\\usepackage{anyfontsize}");
             stream.WriteLine("\\pagestyle{empty}");
+            stream.WriteLine("\\definecolor{mycolor}{rgb}{" + colorDesc + "}");
             stream.WriteLine("\\begin{document}");
             stream.WriteLine("\\fontsize{" + renderFontSize.ToString() + "pt}{" + renderFontSize.ToString() + "pt}\\selectfont");
             stream.WriteLine("% --Font Size: " + fontSize.ToString() + "pt--");
+            stream.WriteLine("\\textcolor{mycolor}{");
             stream.WriteLine("\\begin{eqnarray*}");
             stream.WriteLine(code.Trim(trimableLetters));
             stream.WriteLine("\\end{eqnarray*}");
+            stream.WriteLine("}");
             stream.WriteLine("\\end{document}");
             stream.Close();
             return stream.ToString();
