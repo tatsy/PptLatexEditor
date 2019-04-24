@@ -19,7 +19,7 @@ namespace PowerPointLatex.Properties {
     // または Visual Studio のようなツールを使用して自動生成されました。
     // メンバーを追加または削除するには、.ResX ファイルを編集して、/str オプションと共に
     // ResGen を実行し直すか、または VS プロジェクトをビルドし直します。
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -47,7 +47,7 @@ namespace PowerPointLatex.Properties {
         }
         
         /// <summary>
-        ///   厳密に型指定されたこのリソース クラスを使用して、すべての検索リソースに対し、
+        ///   すべてについて、現在のスレッドの CurrentUICulture プロパティをオーバーライドします
         ///   現在のスレッドの CurrentUICulture プロパティをオーバーライドします。
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
@@ -61,84 +61,86 @@ namespace PowerPointLatex.Properties {
         }
         
         /// <summary>
-        ///   int
-        ///oint
-        ///sum
-        ///prod
-        ///min
-        ///max
-        ///lim
-        ///infty
-        ///ell
-        ///bf
-        ///rm
-        ///mathbf
-        ///mathcal
-        ///mathbb
-        ///mbox
-        ///text
-        ///textrm
-        ///rightarrow
-        ///leftarrow
-        ///Rightarrow
-        ///Leftarrow
-        ///hat
-        ///tilde
+        ///   alpha
+        ///approx
         ///bar
+        ///begin
+        ///beta
+        ///bf
         ///bigcap
         ///bigcup
-        ///bigotimes
         ///bigoplus
-        ///otimes
-        ///oplus
-        ///times
-        ///frac
+        ///bigotimes
         ///cfrac
-        ///left
-        ///right
-        ///sqrt
-        ///ll
-        ///gg
-        ///geq
-        ///leq
-        ///neqapprox
-        ///sim
-        ///in
-        ///equiv
-        ///partial
-        ///quad
-        ///qquad
-        ///begin
-        ///end                                                        
-        ///alpha
-        ///beta
-        ///gamma
-        ///Gamma
         ///delta
         ///Delta
+        ///ell
+        ///end                                                        
         ///epsilon
-        ///varepsilon
-        ///zeta
+        ///equiv
         ///eta
-        ///theta
-        ///Theta
-        ///vartheta
+        ///frac
+        ///gamma
+        ///Gamma
+        ///geq
+        ///gg
+        ///hat
+        ///in
+        ///infty
+        ///int
+        ///kai
         ///kappa
         ///lambda
         ///Lambda
+        ///left
+        ///leftarrow
+        ///Leftarrow
+        ///leq
+        ///lim
+        ///ll
+        ///mathbb
+        ///mathbf
+        ///mathcal
+        ///max
+        ///mbox
+        ///min
         ///mu
+        ///neqapprox
         ///nu
-        ///xi
-        ///pi
+        ///oint
         ///omega
-        ///rho
-        ///varrho
-        ///sigma
-        ///Sigma
-        ///tau
+        ///oplus
+        ///otimes
+        ///partial
         ///phi
         ///Phi
-        ///v [残りの文字列は切り詰められました]&quot;; に類似しているローカライズされた文字列を検索します。
+        ///pi
+        ///prod
+        ///psi
+        ///Psi
+        ///qquad
+        ///quad
+        ///rho
+        ///right
+        ///rightarrow
+        ///Rightarrow
+        ///rm
+        ///sigma
+        ///Sigma
+        ///sim
+        ///sqrt
+        ///sum
+        ///tau
+        ///text
+        ///textrm
+        ///theta
+        ///Theta
+        ///tilde
+        ///times
+        ///varepsilon
+        ///varphi
+        ///varrho
+        ///vart [残りの文字列は切り詰められました]&quot;; に類似しているローカライズされた文字列を検索します。
         /// </summary>
         internal static string LatexKeywords {
             get {

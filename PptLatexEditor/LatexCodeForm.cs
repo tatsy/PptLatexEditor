@@ -44,7 +44,7 @@ namespace PowerPointLatex
             {
                 targetShape = shape;
                 String texCode = shape.AlternativeText;
-                String patCode = @"\\begin\{eqnarray\*\}[\r\n]{0,2}(.*)[\r\n]{0,2}\\end\{eqnarray\*\}";
+                String patCode = @"\\begin\{align\*\}[\r\n]{0,2}(.*)[\r\n]{0,2}\\end\{align\*\}";
                 String patSize = "% --Font Size: ([0-9]+)pt--";
                 String patColor = @"\\definecolor\{mycolor\}\{rgb\}\{([0-9\.,\s]+)\}";
                 MatchCollection matCode = Regex.Matches(texCode, patCode, RegexOptions.Singleline);
@@ -120,7 +120,7 @@ namespace PowerPointLatex
             }
             catch(Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                MessageBox.Show("LaTeX compile: " + ex.Message);
                 return;
             }
 
@@ -170,12 +170,12 @@ namespace PowerPointLatex
                 }
 
                 thread.Abort();
-                MessageBox.Show("Compilation failed!!");
+                MessageBox.Show("LaTeX compile timeout!");
                 return null;
             }
             catch (Exception e)
             {
-                MessageBox.Show(e.Message);
+                MessageBox.Show("Image not found: " + e.Message);
                 throw e;
             }
         }
@@ -194,7 +194,7 @@ namespace PowerPointLatex
                     renderTexCode(code);
 
                     PowerPoint.Shape picBox = TexEquation.GetImageShape();
-                    picBox.ScaleWidth(0.5f, Office.MsoTriState.msoTrue);
+                    picBox.ScaleWidth(0.25f, Office.MsoTriState.msoTrue);
                                         
                     picBox.AlternativeText = code;
                     if (targetShape != null)

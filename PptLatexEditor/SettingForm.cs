@@ -21,7 +21,7 @@ namespace PowerPointLatex
         {
             InitializeComponent();
 
-            //
+            // 
             String initDir = @"C:\";
             if (File.Exists(configFile))
             {
